@@ -19,8 +19,8 @@ if __name__ == '__main__':
     data_frame = #data frame name (string)
     mxd = #path to ArcMap Doc (string)
     rlf = #path to report layer file (.rlf) (string)
-    pdf_output = #path to output pdf location
-    title = #Title of your report 
+    pdf_output = #path to output pdf location (string)
+    title = #Title of your report (string)
 
     lyr = define_parameters(mxd, data_frame, layer_name)
 
