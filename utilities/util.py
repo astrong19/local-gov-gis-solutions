@@ -1,6 +1,5 @@
 import os
 import json
-# from backports import configparser
 
 def get_token(token_file):
     """
@@ -18,11 +17,3 @@ def get_token(token_file):
     else:
         if os.path.splitext(token_path)[1] == '.json':
             return json.load(open(token_path))
-        # elif os.path.splitext(token_path)[1] == '.config':
-        #     parser = configparser()
-        #     parser.read(token_path)
-        #     return parser.items('Credentials')
-        # else:
-        #     with open(token_path, "r") as f:
-        #         for row in f:
-        #             return row
