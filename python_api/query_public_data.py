@@ -1,20 +1,29 @@
-#find and use open ArcGIS data without an ArcGIS Online account or software license
+#Helpful Docs: http://esri.github.io/arcgis-python-api/apidoc/html/arcgis.gis.toc.html#contentmanager
+#http://resources.arcgis.com/en/help/arcgis-rest-api/#/Search_reference/02r3000000mn000000/
 from arcgis.gis import GIS
 
-#initiate class
+#initiate public access
 gis = GIS()
 
-#search for data by in Sac's open data site: http://data.cityofsacramento.org/datasets
-open_layers = gis.content.search(query='owner:Publisher_SacCity AND type:Feature Service', sort_field="numViews", sort_order='asc', max_items=100)
+def find_popular_items(publisher, service_type, tags):
 
-#print layers
-for layer in open_layers:
-    print(layer)
+    #create a for loop that queries AGOL and adds items to items list
+    open_layers = gis.content.search(query='owner:{0} AND type:{1} AND tags:{2}'.format(publisher, service_type, tags), sort_field="numViews", sort_order='asc', max_items=10)
 
-#select layer
-most_viewed_layer = gis.content.search(query='owner:Publisher_SacCity AND type:Feature Service', sort_field="numViews", sort_order='asc', max_items=1)
-for layer in most_viewed_layer:
-    item_id = layer.id
+    print("Found %d open datasets" %(len(open_layers)))
 
-sac_layer = gis.content.get(item_id)
-print('the most viewed layer in Sac Open data is %s' %(sac_layer))
+    for layer in open_layers:
+        print(layer)
+        print("with layer id:" + layer.id)
+
+if __name__ == '__main__':
+
+    #create list of publishers to NorCal open data sites
+    publisher = 'Publisher_SacCity'
+
+    service_type = 'Feature Service'
+
+    tags = 'Fire Department, Fire'
+
+    #call script
+    find_popular_items(publisher, service_type, tags)
