@@ -35,11 +35,14 @@ def build_query(agol_id=None, publisher=None, service_type=None, tags=None, titl
 
     service_type = if_else(service_type, 'type:{}'.format(service_type))
 
-    tags = if_else(tags, ', '.join(map(str, tags)))
-
     title = if_else(title, 'title:{}'.format(title))
 
     group_id = if_else(group_id, 'group:{}'.format(group_id))
+
+    if not tags:
+        tags = ''
+    else:
+        tags = if_else(tags, ', '.join(map(str, tags)))
 
     query = str(agol_id + publisher + service_type + tags + title + group_id)
     query_string = query.split('AND ', 1)[1]
@@ -64,6 +67,10 @@ def find_agol_items(query, sort_field=None, sort_order=None, max_items=None):
     for layer in open_layers:
         print(layer)
         print(layer.title + " with layer id:" + layer.id)
+
+    #return a list of open layers found in the api query... also print for ref
+    print(open_layers)
+    return open_layers
 
 if __name__ == '__main__':
     '''Define parameters for query string here and run the search
