@@ -1,5 +1,6 @@
 #Helpful Docs: http://esri.github.io/arcgis-python-api/apidoc/html/arcgis.gis.toc.html#contentmanager
 #http://resources.arcgis.com/en/help/arcgis-rest-api/#/Search_reference/02r3000000mn000000/
+#https://developers.arcgis.com/python/sample-notebooks/clone-portal-users-groups-and-content/
 from arcgis.gis import GIS
 
 #initiate public access
@@ -76,17 +77,18 @@ if __name__ == '__main__':
     '''Define parameters for query string here and run the search
     params are optional'''
 
-    agol_id = # String, ArcGIS Online Item ID (e.g.,'614bdde2a4714b2098d4c2532fd2c6e7')
 
-    publisher = #String, ArcGIS Online Publisher name(e.g., 'Publisher_SacCity')
+    agol_id = None # String, ArcGIS Online Item ID (e.g.,'614bdde2a4714b2098d4c2532fd2c6e7')
 
-    service_type = #String, ArcGIS Online item type (e.g., 'Feature Service')
+    publisher = None #String, ArcGIS Online Publisher name(e.g., 'Publisher_SacCity')
 
-    tags =  #List, ArcGIS Online item tags (e.g., ['Fire Department, .sd'])
+    service_type = None #String, ArcGIS Online item type (e.g., 'Feature Service')
 
-    title = #String, ArcGIS Online item title (e.g., 'Fire_Stations')
+    tags = None #List, ArcGIS Online item tags (e.g., ['Fire Department, .sd'])
 
-    group_id = #String, ArcGIS Online GRoup ID (e.g., 'f2f40cf99aa947e5961b6c69351a02dc')
+    title = None #String, ArcGIS Online item title (e.g., 'Fire_Stations')
+
+    group_id = None #String, ArcGIS Online GRoup ID (e.g., 'f2f40cf99aa947e5961b6c69351a02dc')
 
     #Build query with above params
     query = build_query(agol_id=agol_id, publisher=publisher, service_type=service_type, tags=tags, title=title)
