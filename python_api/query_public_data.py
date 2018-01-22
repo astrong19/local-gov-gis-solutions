@@ -6,7 +6,7 @@ from arcgis.gis import GIS
 #initiate public access
 gis = GIS()
 
-def if_else(field, action):
+def if_else(field, action=None):
     '''simple if else function to save space in build_query function
     :param field: query param defined in __main__
     :param action: string manipulation defined in build query_string
@@ -14,6 +14,9 @@ def if_else(field, action):
 
     if not field:
         field = ''
+    elif isinstance(field, list):
+        field_edit = ', '.join(map(str, field))
+        field = 'AND tags:{}'.format(field_edit)
     else:
         field_edit = action
         field = ' AND {}'.format(field_edit)
@@ -30,20 +33,17 @@ def build_query(agol_id=None, publisher=None, service_type=None, tags=None, titl
     :param group_id: unique ID of the ArcGIS Online group the item belongs to
     :return: a query string with the above params'''
 
-    agol_id = if_else(agol_id, 'id:{}'.format(agol_id))
+    agol_id = if_else(agol_id, action='id:{}'.format(agol_id))
 
-    publisher = if_else(publisher, 'owner:{}'.format(publisher))
+    publisher = if_else(publisher, action='owner:{}'.format(publisher))
 
-    service_type = if_else(service_type, 'type:{}'.format(service_type))
+    service_type = if_else(service_type, action='type:{}'.format(service_type))
 
-    title = if_else(title, 'title:{}'.format(title))
+    title = if_else(title, action='title:{}'.format(title))
 
-    group_id = if_else(group_id, 'group:{}'.format(group_id))
+    group_id = if_else(group_id, action='group:{}'.format(group_id))
 
-    if not tags:
-        tags = ''
-    else:
-        tags = if_else(tags, ', '.join(map(str, tags)))
+    tags = if_else(tags)
 
     query = str(agol_id + publisher + service_type + tags + title + group_id)
     query_string = query.split('AND ', 1)[1]
