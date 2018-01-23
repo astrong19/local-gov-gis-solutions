@@ -103,7 +103,7 @@ if __name__ == '__main__':
     must be specified. If you want to use the search to clone items to your AGOL account, your
     must specify a username and password (user, password)'''
 
-    '''Query Params to Find Content:'''
+    '''SEARCH PARAMS'''
     agol_id = None #String, ArcGIS Online Item ID (e.g.,'7ccbaa1f4ea6421a8e58b3e3efda7903')
 
     publisher = None #String, ArcGIS Online Publisher name(e.g., 'Publisher_SacCity')
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     #run search with query
     items = find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=10)
 
-    '''ArcGIS Online params to Clone Content:'''
+    '''ARCGIS ONLINE PARAMS'''
     #get password needed to login to account to clone items:
     user = None #set your ArcGIS Online username here
     password = None #set your ArcGIS Online password here
