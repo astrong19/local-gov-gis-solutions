@@ -128,10 +128,11 @@ if __name__ == '__main__':
     password = None #set your ArcGIS Online password here
 
     folder = None #String, specify for cloning... so script knows where to clone content in your Org
+    reference = True #Specify True if you'd like to reference an existing service url or False if you'd like to copy the data directly
 
     #run clone item command
     if user and password:
-        clone_item(user, password, items, True, folder=folder)
+        clone_item(user, password, items, reference, folder=folder)
     elif not user or password:
         print("[WARNING]: must enter username and password to clone content")
         pass
