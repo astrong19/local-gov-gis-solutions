@@ -2,6 +2,10 @@
 #http://resources.arcgis.com/en/help/arcgis-rest-api/#/Search_reference/02r3000000mn000000/
 #https://developers.arcgis.com/python/sample-notebooks/clone-portal-users-groups-and-content/
 from arcgis.gis import GIS
+import sys
+sys.path.append("..")
+
+from utilities import util
 
 #initiate public access
 gis = GIS()
@@ -60,6 +64,9 @@ def find_agol_items(query, sort_field=None, sort_order=None, max_items=None):
     :return: items found in search + item name and id
     '''
 
+    #empty list to hold item ids
+    item_ids = []
+
     #create a for loop that queries AGOL and adds items to items list
     open_layers = gis.content.search(query='{}'.format(query), sort_field=sort_field, sort_order=sort_order, max_items=max_items)
 
@@ -68,17 +75,36 @@ def find_agol_items(query, sort_field=None, sort_order=None, max_items=None):
     for layer in open_layers:
         print(layer)
         print(layer.title + " with layer id:" + layer.id)
+        item_ids.append(layer.id)
 
-    #return a list of open layers found in the api query... also print for ref
-    print(open_layers)
-    return open_layers
+    #return a list of item ids
+    print(item_ids)
+    return item_ids
+
+def clone_item(user, password, item_ids, reference, folder=None):
+
+    target_gis = GIS("https://www.arcgis.com", user, password)
+
+    for item_id in item_ids:
+        item = target_gis.content.get(item_id)
+
+        if reference == True:
+            target_gis.content.add(item, data=item.url, folder=folder)
+            print("copied reference service to ArcGIS Online")
+        elif reference == False:
+            data = [item]
+            target_gis.content.clone_items(data, folder=folder, copy_data=False, search_existing_items=False)
+            print("copied item to ArcGIS Online")
+        else:
+            print("reference must be specified true or false")
 
 if __name__ == '__main__':
-    '''Define parameters for query string here and run the search
-    params are optional'''
+    '''Define parameters for query string here. The parameters are optional but at least owner
+    must be specified. If you want to use the search to clone items to your AGOL account, your
+    must specify a username and password (user, password)'''
 
-
-    agol_id = None # String, ArcGIS Online Item ID (e.g.,'614bdde2a4714b2098d4c2532fd2c6e7')
+    '''Query Params to Find Content:'''
+    agol_id = None #String, ArcGIS Online Item ID (e.g.,'7ccbaa1f4ea6421a8e58b3e3efda7903')
 
     publisher = None #String, ArcGIS Online Publisher name(e.g., 'Publisher_SacCity')
 
@@ -94,4 +120,18 @@ if __name__ == '__main__':
     query = build_query(agol_id=agol_id, publisher=publisher, service_type=service_type, tags=tags, title=title)
 
     #run search with query
-    find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=10)
+    items = find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=10)
+
+    '''ArcGIS Online params to Clone Content:'''
+    #get password needed to login to account to clone items:
+    user = None #set your ArcGIS Online username here
+    password = None #set your ArcGIS Online password here
+
+    folder = None #String, specify for cloning... so script knows where to clone content in your Org
+
+    #run clone item command
+    if user and password:
+        clone_item(user, password, items, True, folder=folder)
+    elif not user or password:
+        print("[WARNING]: must enter username and password to clone content")
+        pass
