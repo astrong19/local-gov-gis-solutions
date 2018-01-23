@@ -70,7 +70,7 @@ def find_agol_items(query, sort_field=None, sort_order=None, max_items=None):
     #create a for loop that queries AGOL and adds items to items list
     open_layers = gis.content.search(query='{}'.format(query), sort_field=sort_field, sort_order=sort_order, max_items=max_items)
 
-    print("Found {} open datasets".format(len(open_layers)))
+    print("[SUCCESS]: Found {} open datasets".format(len(open_layers)))
 
     for layer in open_layers:
         print(layer)
@@ -90,13 +90,13 @@ def clone_item(user, password, item_ids, reference, folder=None):
 
         if reference == True:
             target_gis.content.add(item, data=item.url, folder=folder)
-            print("copied reference service to ArcGIS Online")
+            print("[SUCCESS]: copied reference service to ArcGIS Online for {}".format(item.title))
         elif reference == False:
             data = [item]
             target_gis.content.clone_items(data, folder=folder, copy_data=False, search_existing_items=False)
-            print("copied item to ArcGIS Online")
+            print("[SUCCESS]: copied item to ArcGIS Online for {}".format(item.title))
         else:
-            print("reference must be specified true or false")
+            print("[WARNING]: reference must be specified true or false")
 
 if __name__ == '__main__':
     '''Define parameters for query string here. The parameters are optional but at least owner
