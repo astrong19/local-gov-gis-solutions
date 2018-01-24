@@ -1,11 +1,8 @@
 #Helpful Docs: http://esri.github.io/arcgis-python-api/apidoc/html/arcgis.gis.toc.html#contentmanager
 #http://resources.arcgis.com/en/help/arcgis-rest-api/#/Search_reference/02r3000000mn000000/
 #https://developers.arcgis.com/python/sample-notebooks/clone-portal-users-groups-and-content/
+#Next steps: build support for lists for groups and item ids, allow search within orgs
 from arcgis.gis import GIS
-import sys
-sys.path.append("..")
-
-from utilities import util
 
 #initiate public access
 gis = GIS()
@@ -110,22 +107,22 @@ if __name__ == '__main__':
 
     service_type = None #String, ArcGIS Online item type (e.g., 'Feature Service')
 
-    tags = None #List, ArcGIS Online item tags (e.g., ['Fire Department, .sd'])
+    tags = None
 
     title = None #String, ArcGIS Online item title (e.g., 'Fire_Stations')
 
     group_id = None #String, ArcGIS Online GRoup ID (e.g., 'f2f40cf99aa947e5961b6c69351a02dc')
 
     #Build query with above params
-    query = build_query(agol_id=agol_id, publisher=publisher, service_type=service_type, tags=tags, title=title)
+    query = build_query(agol_id=agol_id, publisher=publisher, service_type=service_type, tags=tags, title=title, group_id=group_id)
 
     #run search with query
-    items = find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=10)
+    items = find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=3)
 
     '''ARCGIS ONLINE PARAMS'''
     #get password needed to login to account to clone items:
-    user = None #set your ArcGIS Online username here
-    password = None #set your ArcGIS Online password here
+    user = None
+    password = None
 
     folder = None #String, specify for cloning... so script knows where to clone content in your Org
     reference = True #Specify True if you'd like to reference an existing service url or False if you'd like to copy the data directly
