@@ -7,17 +7,24 @@ from arcgis.gis import GIS
 #initiate public access
 gis = GIS()
 
-def if_else(field, action=None):
+def if_else(field, list_field=None, action=None):
     '''simple if else function to save space in build_query function
     :param field: query param defined in __main__
     :param action: string manipulation defined in build query_string
     :return: return manipulated field or blank string'''
 
+    #Group and Item id lists need format "id:sdjfsdf or id:sdfsd"
     if not field:
         field = ''
-    elif isinstance(field, list):
+    elif isinstance(field, list) and list_field=='tags':
         field_edit = ', '.join(map(str, field))
         field = 'AND tags:{}'.format(field_edit)
+    elif isinstance(field, list) and list_field=='agol_id':
+        length = len(field)
+        field = ("OR id:%s " * (int(length))) %(tuple(field))
+    elif isinstance(field, list) and list_field=='group_id':
+        length = len(field)
+        field = ("OR group:%s " * (int(length))) %(tuple(field))
     else:
         field_edit = action
         field = ' AND {}'.format(field_edit)
@@ -34,7 +41,7 @@ def build_query(agol_id=None, publisher=None, service_type=None, tags=None, titl
     :param group_id: unique ID of the ArcGIS Online group the item belongs to
     :return: a query string with the above params'''
 
-    agol_id = if_else(agol_id, action='id:{}'.format(agol_id))
+    agol_id = if_else(agol_id, list_field='agol_id', action='id:{}'.format(agol_id))
 
     publisher = if_else(publisher, action='owner:{}'.format(publisher))
 
@@ -42,14 +49,21 @@ def build_query(agol_id=None, publisher=None, service_type=None, tags=None, titl
 
     title = if_else(title, action='title:{}'.format(title))
 
-    group_id = if_else(group_id, action='group:{}'.format(group_id))
+    group_id = if_else(group_id, list_field='group_id', action='group:{}'.format(group_id))
 
-    tags = if_else(tags)
+    tags = if_else(tags, list_field='tags')
 
-    query = str(agol_id + publisher + service_type + tags + title + group_id)
-    query_string = query.split('AND ', 1)[1]
+    query = str(publisher + ' ' + service_type + ' ' + title + ' ' + group_id + ' ' + agol_id + ' ' + tags)
 
-    print(query_string)
+    #remove first AND in query string
+    if 'AND' in query:
+        query_string = query.split('AND ', 1)[1]
+    elif 'OR' in query and 'AND' not in query:
+        query_string = query.split('OR ', 1)[1]
+    else:
+        pass
+
+    print("query string = {}".format(query_string))
     return query_string
 
 def find_agol_items(query, sort_field=None, sort_order=None, max_items=None):
@@ -101,28 +115,28 @@ if __name__ == '__main__':
     must specify a username and password (user, password)'''
 
     '''SEARCH PARAMS'''
-    agol_id = None #String, ArcGIS Online Item ID (e.g.,'7ccbaa1f4ea6421a8e58b3e3efda7903')
+    agol_id = None #List, list of ArcGIS Online ID(s) (e.g.,['7ccbaa1f4ea6421a8e58b3e3efda7903', '2c3e136e2e00435b9a875bb14d5aaf85'])
 
     publisher = None #String, ArcGIS Online Publisher name(e.g., 'Publisher_SacCity')
 
     service_type = None #String, ArcGIS Online item type (e.g., 'Feature Service')
 
-    tags = None
+    tags = None #List, ArcGIS Online item keywords (e.g., ['tag1', 'tag2', 'tag3'])
 
     title = None #String, ArcGIS Online item title (e.g., 'Fire_Stations')
 
-    group_id = None #String, ArcGIS Online GRoup ID (e.g., 'f2f40cf99aa947e5961b6c69351a02dc')
+    group_id = None #List, ArcGIS Online GRoup ID(s) (e.g., ['7926ad6eb91c46bd8229683d4b6a2bd1', 'f2f40cf99aa947e5961b6c69351a02dc'])
 
     #Build query with above params
     query = build_query(agol_id=agol_id, publisher=publisher, service_type=service_type, tags=tags, title=title, group_id=group_id)
 
     #run search with query
-    items = find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=3)
+    items = find_agol_items(query, sort_field="numViews", sort_order='asc', max_items=10)
 
     '''ARCGIS ONLINE PARAMS'''
     #get password needed to login to account to clone items:
-    user = None
-    password = None
+    user = None #Specify your ArcGIS Online username here
+    password = None #Specify your ArcGIS Online password here
 
     folder = None #String, specify for cloning... so script knows where to clone content in your Org
     reference = True #Specify True if you'd like to reference an existing service url or False if you'd like to copy the data directly
