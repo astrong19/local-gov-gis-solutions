@@ -1,6 +1,19 @@
-#Helpful Docs: http://esri.github.io/arcgis-python-api/apidoc/html/arcgis.gis.toc.html#contentmanager
-#http://resources.arcgis.com/en/help/arcgis-rest-api/#/Search_reference/02r3000000mn000000/
-#https://developers.arcgis.com/python/sample-notebooks/clone-portal-users-groups-and-content/
+#-----------------------------------------------------------------------------------------------------------------
+# Name:         find_and_clone_agol_items.py
+#
+# Purpose:      Search for items in ArcGIS Online and clone found items to an AGOL account
+#
+# Notes:        Uses Python 3.x and requires the ArcGIS API for Python: https://developers.arcgis.com/python/guide/install-and-set-up/
+#
+# Created:      1/22/18
+#
+# Helpful links for developers:
+# http://esri.github.io/arcgis-python-api/apidoc/html/arcgis.gis.toc.html#contentmanager
+# http://resources.arcgis.com/en/help/arcgis-rest-api/#/Search_reference/02r3000000mn000000/
+# https://developers.arcgis.com/python/sample-notebooks/clone-portal-users-groups-and-content/
+#
+# Next step:    add outside_org param to gis.content.search to enable portal searches
+#-------------------------------------------------------------------------------------------------------------------
 from arcgis.gis import GIS
 
 def if_else(field, list_field=None, action=None):
