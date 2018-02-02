@@ -4,6 +4,8 @@
 # Purpose:      Search for items in ArcGIS Online and clone found items to an AGOL account
 #
 # Notes:        Uses Python 3.x and requires the ArcGIS API for Python: https://developers.arcgis.com/python/guide/install-and-set-up/
+#               This script is designed to run from the command line (e.g., python find_and_clone_agol_items.py)
+#               All params are specified under if __name__ == '__main___':
 #
 # Created:      1/22/18
 #
@@ -15,6 +17,20 @@
 # Next step:    add outside_org param to gis.content.search to enable portal searches
 #-------------------------------------------------------------------------------------------------------------------
 from arcgis.gis import GIS
+
+def establish_gis_connection(portal_url, user, password):
+
+    if portal_url:
+        print("[DEBUG]: Using Portal for ArcGIS")
+        gis = GIS(portal_url, user, password)
+    elif user and not portal_url:
+        print("[DEBUG]: Using ArcGIS Online")
+        gis = GIS("https://www.arcgis.com", user, password)
+    else:
+        print("[DEBUG]: Using anonymous access to ArcGIS Online")
+        gis = GIS()
+
+    return gis
 
 def if_else(field, list_field=None, action=None):
     '''simple if else function to save space in build_query function
@@ -75,7 +91,7 @@ def build_query(agol_id=None, publisher=None, service_type=None, tags=None, titl
     print("[DEBUG]: query string = {}".format(query_string))
     return query_string
 
-def find_agol_items(gis, query, sort_field=None, sort_order=None, max_items=None):
+def find_agol_items(gis, query, outside_org, sort_field=None, sort_order=None, max_items=None):
     '''use the python API to search ArcGIS Online for items using query string
     :param gis: anonymous access gis authentification
     :param query: query string defined in build_query with params from __main__
@@ -89,7 +105,13 @@ def find_agol_items(gis, query, sort_field=None, sort_order=None, max_items=None
     item_ids = []
 
     #create a for loop that queries AGOL and adds items to items list
-    open_layers = gis.content.search(query='{}'.format(query), sort_field=sort_field, sort_order=sort_order, max_items=max_items)
+    open_layers = gis.content.search(query='{}'.format(query), sort_field=sort_field, sort_order=sort_order, max_items=max_items, outside_org=outside_org)
+
+    #Debug statements
+    if outside_org==True:
+        print("[DEBUG]: Searching outside your organization")
+    elif outside_org==False:
+        print("[DEBUG]: Searching in your organization")
 
     print("[SUCCESS]: Found {} open datasets".format(len(open_layers)))
 
@@ -133,17 +155,12 @@ if __name__ == '__main__':
     password = None #Specify your ArcGIS Online password here
 
     portal_url = None #if you'd like to authetnicate with your portal paste the url here
+    outside_org = True #if true will search data outside your organization, if false will search only your organization's data
     folder = None #String, specify for cloning... so script knows where to clone content in your Org
     reference = True #Specify True if you'd like to reference an existing service url or False if you'd like to copy the data directly
 
     #specify target GIS account to clone content
-    if portal_url:
-        target_gis = GIS(portal_url, user, password)
-    else:
-        target_gis = GIS("https://www.arcgis.com", user, password)
-
-    #specify anonymous GIS access to all public datasets
-    gis = GIS()
+    gis = establish_gis_connection(portal_url, user, password)
 
     '''SEARCH PARAMS'''
     agol_id = None #List, list of ArcGIS Online ID(s) (e.g.,['7ccbaa1f4ea6421a8e58b3e3efda7903', '2c3e136e2e00435b9a875bb14d5aaf85'])
@@ -163,11 +180,11 @@ if __name__ == '__main__':
     query = build_query(agol_id=agol_id, publisher=publisher, service_type=service_type, tags=tags, title=title, group_id=group_id)
 
     #run search with query
-    items = find_agol_items(gis, query, sort_field="numViews", sort_order='asc', max_items=10)
+    items = find_agol_items(gis, query, outside_org, sort_field="numViews", sort_order='asc', max_items=10)
 
     #run clone item command
     if user and password:
-        clone_item(target_gis, items, reference, folder)
+        clone_item(gis, items, reference, folder)
     elif not user or password:
         print("[WARNING]: must enter username and password to clone content")
         pass
