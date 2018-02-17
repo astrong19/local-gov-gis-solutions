@@ -10,7 +10,7 @@ Scripts are written in python 3.5+ and use the top level script environment:
 __main__ so they are designed to be executed as a script called from the command
 line or an interactive prompt.
 
-'''python script_name.py'''
+'python script_name.py'
 
 There are also a few jupyter notebooks (ipynb files) to visually demonstrate
 web-GIS things using the arcgis python API
