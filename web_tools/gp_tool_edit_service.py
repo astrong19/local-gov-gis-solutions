@@ -1,7 +1,7 @@
 # Name:         gp_tool_edit_service.py
 #
 # Function:     A script tool that can be added to an ArcGIS Python toolbox that
-#               will update data in ArcGIS Online with data on your local EmDFawgIkefP7cY7hENGwicZaVsAEQ5ojslnebe344Tp8
+#               will update data in ArcGIS Online with data on your local computer
 #
 # Created:      2/21/18
 #
