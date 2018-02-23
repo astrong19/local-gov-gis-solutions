@@ -5,10 +5,11 @@
 #
 # helpful_docs:
 # https://github.com/Esri/arcgis-python-api/blob/master/samples/05_content_publishers/overwriting_feature_layers.ipynb
-import requests
-import json
 from arcgis.gis import GIS
 from arcgis.features import FeatureLayerCollection
+import requests
+import json
+import csv
 import sys
 sys.path.append("..")
 
@@ -46,10 +47,21 @@ def get_data(output_path, url, path=None):
             json.dump(geojson, f)
 
         data = output_path + '\\data.json'
+        print("wrote json to {}".format(data))
 
-    elif url.endwith('csv'):
-        #doy
-        pass #working progress
+    elif url.endswith('csv'):
+
+        with requests.Session() as s:
+            download = s.get(url)
+            download_decoded = download.content.decode('utf-8')
+
+        f = open(output_path + '\\data.csv', 'w')
+        f.write(download_decoded)
+        f.close()
+
+        data = output_path + '\\data.csv'
+        print("wrote csv to {}".format(data))
+
     else:
         print("[ERROR]: File type not found, please provide a link to a .zip, .json, .csv file")
 
@@ -78,11 +90,11 @@ if __name__ == '__main__':
 
     gis = authenticate(username, password)
 
-    url = "https://raw.githubusercontent.com/astrong19/local-gov-gis-solutions/master/utilities/example.json"
+    url = "https://raw.githubusercontent.com/astrong19/local-gov-gis-solutions/master/utilities/example_csv.csv"
 
-    output_path = r"C:\Users\asapc\Desktop\dev\data"
+    output_path = None #specify path
 
-    item = '9c6230bab74743f7ae4b54f3b34dfba4'
+    item = 'fc8099d50cf3422ca7265c6a1c6d1cd1'
 
     #get data
     data = get_data(output_path=output_path, url=url)
