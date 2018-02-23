@@ -57,17 +57,18 @@ def get_data(output_path, url, path=None):
 
 def overwrite_service(gis, data, item):
 
+    #get item, create collection, overwrite collection
     feature_service = gis.content.get(item)
-
     feature_collection = FeatureLayerCollection.fromitem(feature_service)
-
     feature_collection.manager.overwrite(data)
 
     print("[SUCCESS]: overwrote item: {0} with data {1}".format(item, data))
 
-def append_to_service(data, item):
+def append_to_service(gis, data, item):
 
     pass #working progress
+    feature_service = gis.content.get(item)
+    arcpy.Append_management(data, feature_service, "TEST")
 
 if __name__ == '__main__':
 
