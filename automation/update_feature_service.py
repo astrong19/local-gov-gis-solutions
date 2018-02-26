@@ -10,6 +10,8 @@ from arcgis.features import FeatureLayerCollection
 import requests
 import json
 import csv
+import io
+import zipfile
 import sys
 sys.path.append("..")
 
@@ -33,9 +35,21 @@ def get_data(output_path, url, path=None):
 
     if path:
         data = path
-    elif url.endswith('zip'):
-        #dox
-        pass #working progress
+    elif '.zip' in url:
+
+        #grab zipped shp
+        r = requests.get(url)
+        z = zipfile.ZipFile(io.BytesIO(r.content))
+
+        if any('shp' in s for s in z.namelist()):
+            open(output_path + '\\data.zip', 'wb').write(r.content)
+            data = output_path + '\\data.zip'
+            print("download zipped shp to {}".format(data))
+        else:
+            raise("Zipped file must have a shapefile inside")
+
+        return data
+
     elif url.endswith('json'):
 
         #request json
@@ -51,10 +65,12 @@ def get_data(output_path, url, path=None):
 
     elif url.endswith('csv'):
 
+        #download csv from url and encode utf-8
         with requests.Session() as s:
             download = s.get(url)
             download_decoded = download.content.decode('utf-8')
 
+        #write downloaded csv to file
         f = open(output_path + '\\data.csv', 'w')
         f.write(download_decoded)
         f.close()
@@ -90,11 +106,11 @@ if __name__ == '__main__':
 
     gis = authenticate(username, password)
 
-    url = "https://raw.githubusercontent.com/astrong19/local-gov-gis-solutions/master/utilities/example_csv.csv"
+    url = "https://github.com/astrong19/local-gov-gis-solutions/blob/master/utilities/example_shp.zip?raw=true"
 
     output_path = None #specify path
 
-    item = 'fc8099d50cf3422ca7265c6a1c6d1cd1'
+    item = '05f19f30138d4cb2b79279b245dcb6cd'
 
     #get data
     data = get_data(output_path=output_path, url=url)
