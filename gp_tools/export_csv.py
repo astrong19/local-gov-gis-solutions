@@ -1,6 +1,15 @@
-#simple gp tool to export csv
-#helpful docs:
-#https://community.esri.com/thread/110894
+#-------------------------------------------------------------------------------
+# Name: 		export_csv.py
+#
+# Purpose: 		simple gp tool to export GIS data to a csv (works for point
+#				shapefiles, feature classes and services). Designed to be
+#				published as a web tool/ work with a gp WAB widget
+#
+# Created:		3/12/18
+#
+# Helpful docs:
+# https://community.esri.com/thread/110894
+#-------------------------------------------------------------------------------
 
 import arcpy
 import csv
@@ -26,8 +35,15 @@ def write_to_csv(output, fieldnames, rows):
 if __name__ == '__main__':
 
 	data_set = arcpy.GetParameterAsText(0) #input data
-	output = arcpy.GetParameterAsText(1) #output csv
 	desc = arcpy.Describe(data_set) #describe data
+
+	#make output dest optional
+	output_defined = arcpy.GetParameterAsText(1)
+	if output_defined:
+		output = output_defined
+	else:
+		output = "{}.csv".format(desc.name.split('.')[0]) #output csv
+
 	fieldnames = [f.name for f in desc.fields if f.type not in ["Geometry", "Raster", "Blob"]] #list fields
 	rows = get_rows(data_set, fieldnames) #get rows
 
