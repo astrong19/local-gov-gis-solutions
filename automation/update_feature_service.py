@@ -104,7 +104,7 @@ def overwrite_service(gis, data, item):
 def append_to_service(gis, data, item, format, uniqueid):
     #step1: read csv
     new_df = pd.read_csv(data)
-    print("rows, cols:{}".format(new_df.shape))
+    print("rows, cols in new csv:{}".format(new_df.shape))
 
     #step2: read attribute table of feature service
     fservice = gis.content.get(item)
@@ -119,14 +119,17 @@ def append_to_service(gis, data, item, format, uniqueid):
     #step 4: find features not shared between datasets
     new_rows = new_df[~new_df[uniqueid].isin(overlap_rows[uniqueid])]
     print("new rows, cols:{}".format(new_rows.shape))
+    print("[DEBUG]: new rows: {0}".format(new_rows))
 
     #step 5:new features must be a list of dicts
     new_features = new_rows.to_dict(orient='records')
+    print("[DEBUG]: new feautres: {0}".format(new_features)) #new features has two but then gets brought down to one below
 
-    #step 6: reformat dict function
+    #step 6: reformat dict function (is broekn)
+    #this is the format it wants, how to do 2?: update_dict = {'attributes': {'objectid': 811, 'iso': 'CAN', 'X': -108.84569499999999, 'Y': 53.800655000000006}, 'geometry': {'X': -108.84569499999999, 'Y': 53.800655000000006}}
+    #this didn't work: {'attributes': [{'objectid': 811, 'iso': 'CAN', 'X': -108.84569499999999, 'Y': 53.800655000000006}, {'X': -126.775383, 'Y': 61.480763, 'objectid': 812, 'iso': 'CAN'}], 'geometry': [{'X': -108.84569499999999, 'Y': 53.800655000000006}, {'X': -126.775383, 'Y': 61.480763}]}
     update_dict = reformat_dict(new_rows, new_features, geom_columns=['X', 'Y'])
-    print(f"updating features with {update_dict}")
-
+    print(f"[DEBUG]: updating features with {update_dict}") #might need to split update dict into lists
     #step 7 append new data to feature service
     try:
         flayer.edit_features(adds = [update_dict])
@@ -141,16 +144,19 @@ def reformat_dict(new_rows, new_features, geom_columns):
 
     #reformat dict object
     update_dict = {}
-    update_dict['attributes'] = {}
-    update_dict['geometry'] = {}
 
-    for col in range(0, columns):
-        for feat in range(0, new_features_count):
-            update_dict['attributes'][new_rows.columns[col]] = new_features[feat][new_rows.columns[col]]
+    for col in range(0, new_features_count):
+        oid = new_features[col]['objectid']
+        update_dict[oid] = {}
+        update_dict[oid]['attributes'] = {}
+        update_dict[oid]['geometry'] = {}
 
-    for coord in geom_columns:
-        for feat in range(0, new_features_count):
-            update_dict['geometry'][coord] = new_features[feat][coord]
+        for key in new_features[col].keys():
+            if key not in geom_columns:
+                update_dict[oid]['attributes'][key] = new_features[col][key]
+
+        for coord in geom_columns:
+            update_dict[oid]['geometry'][coord] = new_features[col][coord]
 
     return update_dict
 
@@ -169,7 +175,7 @@ if __name__ == '__main__':
 
     username = None #specify AGOL username here
 
-    password = None #Specify password here
+    password = None  #Specify password here
 
     url = "https://raw.githubusercontent.com/astrong19/local-gov-gis-solutions/master/utilities/example_csv.csv" #specify url to a .csv, .zip or .json file
 
