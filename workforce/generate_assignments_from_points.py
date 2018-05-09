@@ -146,8 +146,8 @@ if __name__ == '__main__':
 
     fs = '540eee4324df4ca4b890f497e64c6486'
 
-    get_csv_from_fs(gis, fs, "new_log_point.csv")
+    get_csv_from_fs(gis, fs, r"data/new_log_point.csv")
 
     workforce_project, assignment_types_dict, dispatchers_dict, workers_dict = define_project(gis, '984c9203a8e64878a441e4dcbe8cf43a')
 
-    create_assignments(gis, "new_log_point.csv", workforce_project, assignment_types_dict, dispatchers_dict, workers_dict)
+    create_assignments(gis, r"data/new_log_point.csv", workforce_project, assignment_types_dict, dispatchers_dict, workers_dict)
