@@ -1,13 +1,15 @@
 # Title: generate_assignments_from_points.py
 #
 # Purpose: create a new workforce assignment when a point is added to an application
-# such as the water service request app: http://pnw.maps.arcgis.com/apps/GeoForm/index.html?appid=72dab4d5a06248a9a21ad32a9636e3e6
+# such as the water service request app: https://solutions.arcgis.com/utilities/water/help/water-service-request/
+# Or a survey 123 form:
 #
 # Helpful links:
 # https://github.com/Esri/workforce-scripts/blob/master/create_assignments_from_csv_readme.md
 # https://github.com/Esri/workforce-scripts/blob/master/scripts/create_assignments_from_csv.py
-
+# https://gis.stackexchange.com/questions/143781/getting-items-from-ordereddict-to-parse-addresses?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 import csv
+import os
 import ast
 import dateutil
 import datetime
@@ -15,18 +17,19 @@ import pandas as pd
 from arcgis.gis import GIS
 from getpass import getpass
 from arcgis.apps import workforce
+from collections import OrderedDict
 
 def authenticate(user, password, portal_url=None):
 
     if portal_url:
-        print("[DEBUG]: Using Portal for ArcGIS")
         gis = GIS(portal_url, user, password)
+        print("[DEBUG]: Using Portal for ArcGIS")
     elif user and not portal_url:
-        print("[DEBUG]: Using ArcGIS Online")
         gis = GIS("https://www.arcgis.com", user, password)
+        print(f"[DEBUG]: Using ArcGIS Online: {gis}")
     else:
-        print("[DEBUG]: Using anonymous access to ArcGIS Online")
         gis = GIS()
+        print("[DEBUG]: Using anonymous access to ArcGIS Online")
 
     return gis
 
@@ -41,23 +44,41 @@ def get_csv_from_fs(gis, fs, output):
     fs_csv = df.to_csv(output)
     print(f"csv exported to {output}")
 
+    #send to reformat method
     reformat_shape_field(output)
 
 def reformat_shape_field(output):
 
     pd_csv = pd.read_csv(output)
-    xy_column = pd_csv['SHAPE']
 
     #iterative over rows
-    for row in range(0, len(pd_csv)):
-        xy_dict = ast.literal_eval(xy_column[row])
+    for index, row in pd_csv.iterrows():
+        xy_dict = ast.literal_eval(row['SHAPE'])
+        print(f"xy_dict: {xy_dict}")
         x = xy_dict['x']
         y = xy_dict['y']
-        pd_csv['x'] = x
-        pd_csv['y'] = y
+        pd_csv.set_value(index, 'x', x)
+        pd_csv.set_value(index, 'y', y)
 
     pd_csv = pd_csv.to_csv(output)
     print(f"added x, y fields to {output}")
+
+def list_assignments_incsv(fs_csv):
+    #TODO add due date argument
+
+    print("creating workforce assignments from csv")
+
+    #append assignments from csv to list
+    assignments_in_csv = []
+    with open(fs_csv, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            print(f"row: {row}")
+            assignments_in_csv.append(row)
+
+    print(f"assignments_in_csv: {assignments_in_csv}")
+
+    return assignments_in_csv
 
 def define_project(gis, project_id):
 
@@ -82,42 +103,34 @@ def define_project(gis, project_id):
     for worker in workers:
         workers_dict[worker.user_id] = worker
 
-    print("returning project definition dictionaries")
-
     return workforce_project, assignment_type_dict, dispatchers_dict, workers_dict
 
-def create_assignments(gis, fs_csv, workforce_project, assignment_type_dict, dispatchers_dict, workers_dict):
-    #TODO add due date argument
-
-    print("creating workforce assignments from csv")
-
-    #append assignments from csv to list
-    assignments_in_csv = []
-    with open(fs_csv, 'r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            assignments_in_csv.append(row)
+def create_assignments(assignments_in_csv, workforce_project, assignment_types_dict, dispatchers_dict, workers_dict):
+    #why is water quality being added twice
+    #why is the location not correct
 
     assignments_to_add = []
     for assignment in assignments_in_csv:
+        print(f"assignment: {assignment}")
         assignment_to_add = workforce.Assignment(workforce_project)
         # Create the geometry
         geometry = dict(x=float(assignment['x']),
                         y=float(assignment['y']),
                         spatialReference=dict(
-                            wkid=int(3857)))
+                            wkid=int(4326)))
+        print(geometry)
         assignment_to_add.geometry = geometry
 
-        # Set the assignment type
-        assignment_to_add.assignment_type = assignment_type_dict["Sewer Odor"]
+        fs_assignment_type = assignment['type_of_issue']
+        assignment_to_add.assignment_type = assignment_types_dict[fs_assignment_type]
+        print(f"Added type {fs_assignment_type}")
 
-        #add location??
-        assignment_to_add.location = assignment['SHAPE']
+        assignment_to_add.location = assignment['address']
+        print("Added address")
 
-        #set description
-        assignment_to_add.description = "this is a test"
+        assignment_to_add.description = assignment['add_details']
+        print("Added details")
 
-        #set priority
         assignment_to_add.priority = "High"
 
         #Set dispatcher
@@ -142,12 +155,22 @@ def create_assignments(gis, fs_csv, workforce_project, assignment_type_dict, dis
 
 if __name__ == '__main__':
 
+    '''USER SPECIFIED VARIABLES'''
+    #specify AGOL username and password here
     gis = authenticate("astrong_pnw", getpass())
 
-    fs = '540eee4324df4ca4b890f497e64c6486'
+    #specify feature service ArcGIS Online Item ID here
+    fs = '48357ff7b632461bb99b7f51b14fcd71'
 
-    get_csv_from_fs(gis, fs, r"data/new_log_point.csv")
+    #specify workforce project ID here
+    project_id = 'cd726615306f407396bacfbe1b5019e8'
 
-    workforce_project, assignment_types_dict, dispatchers_dict, workers_dict = define_project(gis, '984c9203a8e64878a441e4dcbe8cf43a')
+    #specify output directory here
+    output = r"data/new_log_point.csv"
 
-    create_assignments(gis, r"data/new_log_point.csv", workforce_project, assignment_types_dict, dispatchers_dict, workers_dict)
+    '''RUN SCRIPT'''
+    get_csv_from_fs(gis, fs, output)
+    assignments_in_csv = list_assignments_incsv(output)
+    print(f"assignments in csv: {assignments_in_csv}")
+    workforce_project, assignment_types_dict, dispatchers_dict, workers_dict = define_project(gis, project_id)
+    create_assignments(assignments_in_csv, workforce_project, assignment_types_dict, dispatchers_dict, workers_dict)
