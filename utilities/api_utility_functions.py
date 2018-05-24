@@ -31,8 +31,16 @@ class ApiUtilities(object):
 
         print("Deleted Features for {}".format(item.title))
 
+    def clone_item(self, item_id, copy_data):
+
+        item_to_clone = self.gis.content.get(item_id)
+        data = [item_to_clone]
+
+        self.gis.content.clone_items(data, copy_data=copy_data, search_existing_items=False)
+        print("copied item {0} to {1}".format(item_to_clone.title, self.gis))
+
 if __name__ == '__main__':
 
-    item_id = None #enter item id here
+    item_id = '53244a1d3ca447d8a890ad6bbc43621b' #enter item id here
     api = ApiUtilities('astrong_pnw', getpass())
-    api.delete_features(item_id)
+    api.clone_item(item_id, False)
