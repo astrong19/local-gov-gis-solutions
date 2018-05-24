@@ -34,5 +34,5 @@ class ApiUtilities(object):
 if __name__ == '__main__':
 
     item_id = None #enter item id here
-    api = ApiUtilities('astrong_pnw', 'esriGIS2018!')
+    api = ApiUtilities('astrong_pnw', getpass())
     api.delete_features(item_id)
