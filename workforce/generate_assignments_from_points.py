@@ -20,6 +20,12 @@ from arcgis.apps import workforce
 from collections import OrderedDict
 
 def authenticate(user, password, portal_url=None):
+    '''authenticate with ArcGIS Online or portal
+    :param user: username to agol or portal
+    :param password: password for agol or portal
+    :param portal_url: if using portal, specify enterprise url here
+    :return: instance with permissions to the named user account
+    '''
 
     if portal_url:
         gis = GIS(portal_url, user, password)
@@ -34,6 +40,10 @@ def authenticate(user, password, portal_url=None):
     return gis
 
 def get_csv_from_fs(gis, fs, output):
+    '''download a csv from feature service
+    :param gis: authenticated instance
+    :param fs: id to the feature service item in ArcGIS Online or Porta
+    :param fs_csv: the output path and file name for the csv'''
 
     print("download app fs as csv")
     fservice = gis.content.get(fs)
@@ -48,6 +58,8 @@ def get_csv_from_fs(gis, fs, output):
     reformat_shape_field(output)
 
 def reformat_shape_field(output):
+    '''add x, y from the dictionary in the csv's shape field
+    :param fs_csv: output path and file name of edited csv'''
 
     pd_csv = pd.read_csv(output)
 
@@ -64,7 +76,9 @@ def reformat_shape_field(output):
     print(f"added x, y fields to {output}")
 
 def list_assignments_incsv(fs_csv):
-    #TODO add due date argument
+    '''append each row in csv to a dictionary in a list and return the list
+    :param fs_csv: csv generated from feature service
+    :return assignments_in_csv: list of each row in csv'''
 
     print("creating workforce assignments from csv")
 
@@ -81,6 +95,10 @@ def list_assignments_incsv(fs_csv):
     return assignments_in_csv
 
 def define_project(gis, project_id):
+    '''read workforce project and add parameters to dictionaries
+    :param gis: instance authenticated with AGOL or Portal account
+    :param project_id: workforce item id
+    :return: three dictionaries describing workforce parameters'''
 
     workforce_item = gis.content.get(project_id)
     workforce_project = workforce.Project(workforce_item)
@@ -106,8 +124,12 @@ def define_project(gis, project_id):
     return workforce_project, assignment_type_dict, dispatchers_dict, workers_dict
 
 def create_assignments(assignments_in_csv, workforce_project, assignment_types_dict, dispatchers_dict, workers_dict):
-    #why is water quality being added twice
-    #why is the location not correct
+    '''add assignments to workforce project
+    :param assignments in csv: list of dictionaries of each record in feature fservice
+    :param workforce_project: workforce project defined in define_project
+    :param assignment_type_dict: assignment types dict defined in define_project
+    :param dispatchers_dict: dispatchers dictionary defined in define_project
+    :param workers_dict: workers dictionary defined in define_project'''
 
     assignments_to_add = []
     for assignment in assignments_in_csv:
@@ -154,6 +176,7 @@ def create_assignments(assignments_in_csv, workforce_project, assignment_types_d
     print("created new assignment")
 
 if __name__ == '__main__':
+    '''USER DEFINED PARAMETERS- this is the important stuff, that make this script run'''
 
     '''USER SPECIFIED VARIABLES'''
     #specify AGOL username and password here
