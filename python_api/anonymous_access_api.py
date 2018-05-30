@@ -9,7 +9,7 @@ class AnonymousApiUser(object):
     def __init__(self):
 
         self.gis = GIS()
-        print("connected:{}".format(self.gis.properties.portalName))
+        print("connected: {}".format(self.gis.properties.portalName))
 
     def get_json_from_item(self, item_id):
         '''Access json of a feature service'''
@@ -33,6 +33,17 @@ class AnonymousApiUser(object):
         item.download(save_path = file_path)
         print("downloaded {}".format(item.title))
 
+    def geocode(self, locations):
+        '''Get coordinates from address or location name'''
+
+        coordinates = []
+        for location in locations:
+            coord = geocode(location)
+            coordinates.append(coord)
+
+        print(coordinates)
+        return coordinates
+
     def reverse_geocode(self, locations):
         '''Get address from coordinate pairs'''
 
@@ -47,14 +58,14 @@ class AnonymousApiUser(object):
 
 if __name__ == '__main__':
     '''USER SPECIFIED VARIABLES'''
-
-    item_id = 'a04933c045714492bda6886f355416f2' #enter item id here
-    locations = [{'Y':34.13419,
-        'X':-118.29636,
-       'spatialReference':{
-           'wkid':4326}
-       }]
+    #ArcGIS Online Item ID
+    item_id = 'a04933c045714492bda6886f355416f2'
+    #If reverse geocoding, list coordinates as dictionaries
+    #If geocoding list addresses or place names
+    locations = ['1315 10th St B-27, Sacramento, CA 95814']
 
     '''RUN AN OPERATION'''
+    #Initalize class
     api = AnonymousApiUser()
-    api.reverse_geocode(locations)
+    #Specify class method
+    api.geocode(locations)
